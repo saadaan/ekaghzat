@@ -6,29 +6,21 @@
 	$dbconn = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
   if ($dbconn->connect_errno) { printf("Connect failed: %s\n", $dbconn->connect_error); exit(); }
 
-		if(isset($_POST['submitform']))
-		{
-		    $doc_name = $_POST['doc_name'];
-//		    $upload_image = $_POST['upload_image'];
+		    $transaction_id = $_POST['tid'];
 
-				// Uploaded file processing
-				define("UPLOAD_DIR", "/var/www/html/ek/docs/");
-				$file_name	=	$_FILES['formfile']['name'];
-				$tmp	=	$_FILES['formfile']['tmp_name'];
-		
-				$file_name = "1.".$doc_name.".jpg";
-				
-		    // preserve file from temporary directory
-		    $success = move_uploaded_file($tmp, UPLOAD_DIR . $file_name);
-		    if (!$success) { echo "<p>Unable to save file.</p>"; exit; }	
-
-        $sql = "INSERT into docs (user_id,doc_name,path,date)
-                      VALUES ('1','$doc_name','docs/$file_name',NOW())";
+        $sql = "select * from transactions where auth_code = '$transaction_id' limit 1";
         $result = $dbconn->query($sql) or die($dbconn->error.__LINE__);
-        $batch_id = $dbconn->insert_id;
+				$row = $result->fetch_assoc();
+
+				$doc = $row["doc"];
+				$msisdn = $row["msisdn"];
+
+        $sql2 = "select * from docs where user_id = '1' and doc_name = '$doc'";
+        $result2 = $dbconn->query($sql2) or die($dbconn->error.__LINE__);
+				$row2 = $result2->fetch_assoc();
 				
-			echo '<script type="text/javascript">alert("File uploaded successfully.");</script>';
-		}
+				$path = $row2["path"];								
+				
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -102,45 +94,12 @@
         </div>
         <div class="clear">
         </div>
-				<?php include('menu.php'); ?>
         <div class="grid_10">
             <div class="box round first grid">
-                <h2>Create New Codes</h2>
+                <h2></h2>
                 <div class="block">
 
-                    <form name="input" action="<?php echo $_SERVER["PHP_SELF"]; ?>" method="post" enctype="multipart/form-data">
-                    <table class="form">
-												<tr>
-                            <td>
-                                <label>Please select the type of document</label>
-                            </td>
-                            <td>    
-                            		<select id="select" name="doc_name">
-                                    <option value="cnic_front">CNIC (Front side)</option>
-                                    <option value="cnic_back">CNIC (Back side)</option>
-                                    <option value="b_form">Form B</option>
-                                    <option value="driving_license">Driving License</option>
-                                    <option value="matric">Matric Certificate</option>
-                                    <option value="graduation_certificate">Graduation Certificate</option>
-                                </select>
-                             </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <label>Select the image file</label>
-                            </td>
-                            <td>
-															<input type="file" class="form-control" required name="formfile" id="formfile">
-														</td>
-												</tr>
-												<br>
-                        <tr>
-                            <td>
-																<input type="submit" value="Upload" name="submitform">
-                            </td>
-                        </tr>
-                    </table>
-                    </form>
+									<img src="<?php echo $path; ?>" width=300>
 
                 </div>
             </div>
@@ -152,7 +111,6 @@
     </div>
     <div id="site_info">
         <p>
-            Copyright <a href="#">Aeon Technologies</a>. All Rights Reserved.
         </p>
     </div>
 </body>

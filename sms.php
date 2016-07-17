@@ -15,8 +15,10 @@
 	$sender = fixMSISDN($sender);
 //	$receiver = fixMSISDN($receiver);
 
-	$auth_code = mt_rand(10000, 99999);
+	$sql = "select * from users where msisdn = '$sender'";
+	$result = $dbconn->query($sql);
 
+	$auth_code = mt_rand(10000, 99999);
 
 	$sql = "INSERT INTO transactions (msisdn,auth_code,doc,date) VALUES ('$sender','$auth_code','$keyword',NOW())";
 	$result = $dbconn->query($sql);
